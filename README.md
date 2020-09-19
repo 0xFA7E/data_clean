@@ -18,4 +18,6 @@ optional arguments:
   -v, --verbose    Increased output, -v for changed files, -vv for all files
   -r, --recursive  Recursively descend into subfolders
   -t, --test       Identify file(s) but do not change filename(s)
+  -s, --stats      Print a summary of changes
+
 ```
