@@ -5,6 +5,9 @@ from os import listdir, rename
 from os.path import isfile, join, isdir
 import argparse
 
+changed = 0
+unchanged = 0
+
 
 def get_file_extension(filename):
     """we leverage Libmagic for actual filetype identification and grab a viable mimetype
@@ -23,7 +26,7 @@ def get_file_extension(filename):
     except Exception as error:
         # I actually have no clue what kind of error libmagic can throw, but lets catch all
         # just in case so the entire script doesnt die on one naughty file
-        print("[!!] Libmagic encountered error processing {0} with error {1}", (filename, error))
+        print(f"[!!] Libmagic encountered error processing {filename} with error {error}")
         return ""
 
 
@@ -35,6 +38,8 @@ def is_unknown(filename):
 
 def identify_file(filename):
     """If we don't know what kind of file it is, find out, otherwise leave it alone"""
+    global changed
+    global unchanged
     if is_unknown(filename):
         ext = get_file_extension(filename)
         name = filename + ext
@@ -43,10 +48,14 @@ def identify_file(filename):
         if not args.test:
             try:
                 rename(filename, name)
+                changed += 1
             except Exception as error:
-                print("[!] Could not rename {0} because of error {1}", (filename, error))
+                print(f"[!] Could not rename {filename} because of error {error}")
+        else:
+            unchanged += 1
     else:
         name = filename
+        unchanged += 1
         if args.verbose >= 2:
             print(name)
     return name
@@ -76,7 +85,8 @@ if __name__ == "__main__":
                         help="Recursively descend into subfolders")
     parser.add_argument("-t", "--test", action="store_true",
                         help="Identify file(s) but do not change filename(s)")
-
+    parser.add_argument("-s", "--stats", action="store_true",
+                        help="Print a summary of changes")
     # Print the help message if no arguments
     try:
         args = parser.parse_args()
@@ -89,3 +99,5 @@ if __name__ == "__main__":
             identify_file(names)
         else:
             identify_dir(names)
+    if args.stats:
+        print(f"{changed} Changed files, {unchanged} Unchanged files")
