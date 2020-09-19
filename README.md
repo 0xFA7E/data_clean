@@ -4,7 +4,7 @@ Inspired usecase is having recovered several hundred files with a utility like R
 for windows to properly associate them with an application for opening. 
 
 # usage
-
+```
 usage: file_identify.py [-h] [-v] [-r] [-t] location [location ...]
 
 A utility for renaming unknown files in Windows according to its mimetype as
@@ -18,3 +18,4 @@ optional arguments:
   -v, --verbose    Increased output, -v for changed files, -vv for all files
   -r, --recursive  Recursively descend into subfolders
   -t, --test       Identify file(s) but do not change filename(s)
+```
