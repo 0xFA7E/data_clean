@@ -7,7 +7,8 @@ import argparse
 
 changed = 0
 unchanged = 0
-
+deleted = 0
+hashlist = "hashes.txt"
 
 def get_file_extension(filename):
     """we leverage Libmagic for actual filetype identification and grab a viable mimetype
@@ -61,43 +62,66 @@ def identify_file(filename):
     return name
 
 
-def identify_dir(directory):
-    """Takes a directory as a string and processes it for files to identify, if recursive is set
+def process_dir(directory):
+    """Takes a directory as a string and processes it for files to identify or delete, if recursive is set
     it will descend into those as well"""
     files = [join(directory, f) for f in listdir(directory) if isfile(join(directory, f))]
     for file in files:
-        identify_file(file)
+        process_file(file)
     if args.recursive:
         # we're descending recursively but not checking for any looping redirects or anything, take care humans
         directories = [join(directory, dirs) for dirs in listdir(directory) if isdir(join(directory, dirs))]
         for d in directories:
-            identify_dir(d)
+            process_dir(d)
 
+def process_file(filename):
+    """Process a filename and decide what actions to preform based on the arguments provided"""
+    if (args.identify or args.all):
+        identify_file(filename)
+    if(args.cleanse or args.all):
+        cleanse_file(filename)
+    return
+
+def cleanse_file(filename):
+    """Check if a file must be deleted based on the hashlist"""
+    return
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="A utility for renaming unknown files in Windows \
-                                                  according to its mimetype as identified by Libmagic")
+    parser = argparse.ArgumentParser(description="A utility for cleaning up data pulled from file recovery\
+                                                software. Can identify files with unknown extentions with Libmagic\
+                                                and delete some system files based on a list of hashes.")
     parser.add_argument("location", type=str, nargs="+",
-                        help="Identify file(s) and changes the filename to nearest match")
+                        help="File(s)/Directories to process")
     parser.add_argument("-v", "--verbose", action="count", default=0,
                         help="Increased output, -v for changed files, -vv for all files")
     parser.add_argument("-r", "--recursive", action="store_true",
                         help="Recursively descend into subfolders")
     parser.add_argument("-t", "--test", action="store_true",
-                        help="Identify file(s) but do not change filename(s)")
+                        help="Process but do not make changes.")
     parser.add_argument("-s", "--stats", action="store_true",
                         help="Print a summary of changes")
+    parser.add_argument("-a","--all", action="store_true",
+                        help="Preform both identify and cleansing operations")
+    parser.add_argument("-i", "--identify", action="store_true",
+                        help="Identify Mode. Rename file extensions based on Libmagic")
+    parser.add_argument("-c", "--cleanse", action="store_true",
+                        help="Delete junk files by comparing to a hashlist. Default is hashes.txt")
+    parser.add_argument("-H", "--hashlist", action="store_true",
+                        help="hashlist to use in conjuction with --cleanse or --all")
     # Print the help message if no arguments
     try:
         args = parser.parse_args()
     except:
         parser.print_help()
         sys.exit(1)
+    if (not args.identify and not args.cleanse and not args.all):
+    #no actions provided
+        print("[!!] No actions provided, none taken!")
+        sys.exit(1)
     for names in args.location:
-
         if isfile(names):
-            identify_file(names)
+            process_file(names)
         else:
-            identify_dir(names)
+            process_dir(names)
     if args.stats:
-        print(f"{changed} Changed files, {unchanged} Unchanged files")
+        print(f"{changed} Changed files, {deleted} Deleted files, {unchanged} Unchanged files")
