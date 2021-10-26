@@ -17,7 +17,7 @@ Currently updating to add the ability to remove system and other junk files base
 4. Investigate feasibility of parallelization(would def rework whole structure)
 
 5. Collect more file hashes from various systems to make more robust cleaning. 
-5a. Include utility to collect hashes for more rapid harvesting from new systems
+  5a. Include utility to collect hashes for more rapid harvesting from new systems
 
 # usage
 Note: Usage here is outdated as project is being updated. Refer to program help for more information.
