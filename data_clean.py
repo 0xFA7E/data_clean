@@ -1,14 +1,28 @@
 import sys
-
+from hashlib import md5
 import magic
-from os import listdir, rename
+from os import close, listdir, rename, remove
 from os.path import isfile, join, isdir
 import argparse
 
 changed = 0
 unchanged = 0
 deleted = 0
-hashlist = "hashes.txt"
+hashfile = "hashes.txt"
+hashes = []
+
+def read_hashes(hashfile):
+    """generate the list of hashes based on provided hashfile"""
+    global hashes
+    hashcount = 0
+    file = open(hashfile,'r')
+    for i in file.readlines():
+        hashes.append(i.strip())
+        hashcount += 1
+    file.close()
+    if args.verbose >= 1:
+        print(f"Loaded {hashcount} hashes")
+    return hashes
 
 def get_file_extension(filename):
     """we leverage Libmagic for actual filetype identification and grab a viable mimetype
@@ -30,17 +44,21 @@ def get_file_extension(filename):
         print(f"[!!] Libmagic encountered error processing {filename} with error {error}")
         return ""
 
-
 def is_unknown(filename):
     """Windows uses extensions to determine if it knows the filetype or not, so we only
     care here if there is no extension in the filename"""
-    return '.' not in filename
+    
+    #strip out some nix styled relative addressing that may messup our filename checks
+    if './' in filename:
+        filename = filename.strip('./')
 
+    if args.verbose >= 3:
+        print(f"[!] {filename}, {'.' not in filename}")
+    
+    return '.' not in filename
 
 def identify_file(filename):
     """If we don't know what kind of file it is, find out, otherwise leave it alone"""
-    global changed
-    global unchanged
     if is_unknown(filename):
         ext = get_file_extension(filename)
         name = filename + ext
@@ -49,18 +67,14 @@ def identify_file(filename):
         if not args.test:
             try:
                 rename(filename, name)
-                changed += 1
+                return True
             except Exception as error:
                 print(f"[!] Could not rename {filename} because of error {error}")
-        else:
-            unchanged += 1
     else:
         name = filename
-        unchanged += 1
         if args.verbose >= 2:
             print(name)
-    return name
-
+    return False
 
 def process_dir(directory):
     """Takes a directory as a string and processes it for files to identify or delete, if recursive is set
@@ -75,16 +89,47 @@ def process_dir(directory):
             process_dir(d)
 
 def process_file(filename):
+    global deleted
+    global changed
+    global unchanged
     """Process a filename and decide what actions to preform based on the arguments provided"""
-    if (args.identify or args.all):
-        identify_file(filename)
     if(args.cleanse or args.all):
-        cleanse_file(filename)
+        cleansed = cleanse_file(filename)
+        if cleansed:
+            #we deleted the file, dont need to identify it
+            deleted += 1
+            return
+    if (args.identify or args.all):
+        renamed = identify_file(filename)
+        if renamed:
+            changed += 1
+            return
+    #we neither deleted or renamed anything
+    unchanged += 1 
     return
 
 def cleanse_file(filename):
     """Check if a file must be deleted based on the hashlist"""
-    return
+    global hashes
+    try:
+        file = open(filename,'rb')
+        hash = md5(file.read()).hexdigest()
+    except Exception as error:
+        print(f"[!!] Failed to get md5 of {filename} because {error}")
+        return False
+    if args.verbose >= 3:
+        print(f'[!] Hash {hash}, filename {filename}')
+    if hash in hashes:
+        if args.verbose >= 1:
+            print(f"[*] Found {filename} in hashlist[{hash}]. Marked for deletion")
+        if not args.test:
+            try:
+                file.close()
+                remove(filename)
+                return True
+            except Exception as error:
+                print(f"[!!] Could not delete {filename} because {error}")
+                return False
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="A utility for cleaning up data pulled from file recovery\
@@ -106,7 +151,7 @@ if __name__ == "__main__":
                         help="Identify Mode. Rename file extensions based on Libmagic")
     parser.add_argument("-c", "--cleanse", action="store_true",
                         help="Delete junk files by comparing to a hashlist. Default is hashes.txt")
-    parser.add_argument("-H", "--hashlist", action="store_true",
+    parser.add_argument("-H", "--hashfile", type=str,
                         help="hashlist to use in conjuction with --cleanse or --all")
     # Print the help message if no arguments
     try:
@@ -118,6 +163,13 @@ if __name__ == "__main__":
     #no actions provided
         print("[!!] No actions provided, none taken!")
         sys.exit(1)
+
+    if args.cleanse or args.all:
+    #Read the hashes now so that were not trying to reopen the hash file everytime we process a file, probably a better way to do this
+        if args.hashfile:
+            hashfile = args.hashfile
+        hashes = read_hashes(hashfile) 
+    
     for names in args.location:
         if isfile(names):
             process_file(names)
