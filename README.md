@@ -1,9 +1,14 @@
-# identify_files
-A small utility for mass identifying and renaming a list of unknown files(Mainly for Windows) based on Libmagic.
+# data_clean
+A utility for cleaning up data pulled from file recovery software. Can identify files with unknown extentions with Libmagic and delete some system files based on a list of hashes.
+
 Inspired usecase is having recovered several hundred files with a utility like Recuva, but the filenames lack an extension
 for windows to properly associate them with an application for opening. 
 
+Currently updating to add the ability to remove system and other junk files based on a hashlist gathered from other systems. Hence the project rename. 
+
 # usage
+Note: Usage here is outdated as project is being updated. Refer to program help for more information.
+
 ```
 usage: file_identify.py [-h] [-v] [-r] [-t] location [location ...]
 
