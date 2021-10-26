@@ -6,6 +6,19 @@ for windows to properly associate them with an application for opening.
 
 Currently updating to add the ability to remove system and other junk files based on a hashlist gathered from other systems. Hence the project rename. 
 
+# TODO
+
+1. Update usage
+
+2. Implement empty folder deletion
+
+3. Standarize verbosity options
+
+4. Investigate feasibility of parallelization(would def rework whole structure)
+
+5. Collect more file hashes from various systems to make more robust cleaning. 
+5a. Include utility to collect hashes for more rapid harvesting from new systems
+
 # usage
 Note: Usage here is outdated as project is being updated. Refer to program help for more information.
 
@@ -25,4 +38,11 @@ optional arguments:
   -t, --test       Identify file(s) but do not change filename(s)
   -s, --stats      Print a summary of changes
 
+```
+# Hash Collection List
+
+This is a non-exhaustive list of OSes/Software that has currently had hashes collected from.
+
+```
+MacOS Catalina 10.15.7
 ```
