@@ -111,7 +111,7 @@ env.bak/
 venv.bak/
 pyvenv.cfg
 bin/
-
+file_identify/
 # Spyder project settings
 .spyderproject
 .spyproject
