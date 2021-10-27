@@ -45,4 +45,6 @@ This is a non-exhaustive list of OSes/Software that has currently had hashes col
 
 ```
 MacOS Catalina 10.15.7
+Windows 7 Home
+Windows 10 Home
 ```
