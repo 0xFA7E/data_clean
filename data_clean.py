@@ -36,6 +36,8 @@ def parse_args() -> Tuple[argparse.ArgumentParser, Config]:
                         help="Identify Mode. Rename file extensions based on Libmagic")
     parser.add_argument("-c", "--cleanse", action="store_true",
                         help="Delete junk files by comparing to a hashlist. Default is hashes.txt")
+    parser.add_argument("-D", "--dedupe", action="store_true",
+                        help="Remove duplicated files")
     parser.add_argument("-H", "--hashfile", type=str,
                         help="hashlist to use in conjuction with --cleanse or --all")
     # Print the help message if no arguments
@@ -44,7 +46,9 @@ def parse_args() -> Tuple[argparse.ArgumentParser, Config]:
     except:
         parser.print_help()
         sys.exit(1)
-    if (not args.identify and not args.cleanse and not args.all):
+
+    actions = [args.identify, args.cleanse, args.dedupe, args.all]
+    if (not any(actions)):
     #no actions provided
         print("[!!] No actions provided, none taken!")
         sys.exit(1)
@@ -52,6 +56,7 @@ def parse_args() -> Tuple[argparse.ArgumentParser, Config]:
     if args.all:
         args.cleanse = True
         args.identify = True
+        args.dedupe = True
 
     #set hashfile if not set
     if not args.hashfile:
@@ -67,6 +72,7 @@ def parse_args() -> Tuple[argparse.ArgumentParser, Config]:
         config.debug = True
 
     config.test = args.test
+    config.dedupe = args.dedupe
 
     return args, config
 
@@ -88,6 +94,11 @@ def main():
     stats.num_of_files = len(files)
 
     #cleanse files first before identify
+    #check for just dedupe removal
+    if args.dedupe and not args.cleanse:
+        cleanse = Cleanse(files=files, hashes=[], config=config, stats=stats)
+        files = cleanse.run()
+    #if dedupe is set regular cleanse will handle it too
     if args.cleanse:
         hashes = read_hashes(args.hashfile, config.verbose)
         cleanse = Cleanse(files=files, hashes=hashes, config=config, stats=stats)

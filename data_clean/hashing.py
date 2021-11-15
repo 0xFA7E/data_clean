@@ -13,6 +13,6 @@ def read_hashes(hashfile: str, verbose: bool = False) -> list:
     return hashes
 
 def hash_file(filename: str) -> str:
-    with open(filename, 'rb', encoding='utf8') as f:
+    with open(filename, 'rb') as f:
         file_hash = md5(f.read()).hexdigest()
     return file_hash
