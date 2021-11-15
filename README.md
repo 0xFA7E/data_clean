@@ -12,12 +12,16 @@ Currently updating to add the ability to remove system and other junk files base
 
 2. Implement empty folder deletion
 
-3. Standarize verbosity options
+3. Deduplicate files
 
-4. Investigate feasibility of parallelization(would def rework whole structure)
+4. Refactor hashcollector+hashmerge
 
-5. Collect more file hashes from various systems to make more robust cleaning. 
+5. Investigate feasibility of parallelization(would def rework whole structure)
+
+6. Collect more file hashes from various systems to make more robust cleaning. 
   5a. Include utility to collect hashes for more rapid harvesting from new systems
+
+7. Setup dev branch
 
 # usage
 Note: Usage here is outdated as project is being updated. Refer to program help for more information.
