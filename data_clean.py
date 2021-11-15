@@ -59,7 +59,11 @@ def parse_args() -> argparse.ArgumentParser:
 
 def main():
     #parse arguments
+<<<<<<< HEAD
     args = parse_args()
+=======
+    args = parse_args()    
+>>>>>>> 67005eb0b8e18a86f5e064c7e92ebbeb3a935506
 
     #Create stat tracking object
     stats = Stats()
@@ -77,7 +81,7 @@ def main():
 
     if args.cleanse:
     #Read the hashes now so that were not trying to reopen the hash file everytime we process a file, probably a better way to do this
-        hashes = read_hashes(args.hashfile)
+        hashes = read_hashes(args.hashfile) 
     
     if args.stats:
         print(f"{stats.changed} Changed files, {stats.deleted} Deleted files, {stats.unchanged} Unchanged files")
