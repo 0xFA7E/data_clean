@@ -132,3 +132,6 @@ dmypy.json
 
 #misc
 testhashes.txt
+test
+test.txt
+collected_hashes.txt

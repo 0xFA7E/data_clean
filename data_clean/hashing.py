@@ -16,3 +16,4 @@ def hash(filename: str) -> str:
     with open(filename, 'rb') as f:
         hash = md5(f.read()).hexdigest()
     return hash
+    

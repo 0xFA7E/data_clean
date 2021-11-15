@@ -1,17 +1,22 @@
+"""Main tool for cleaning up files namely for data recovery purposes"""
+
 import sys
 from os.path import isfile
 import argparse
-import logging
+from typing import Tuple
+from data_clean.cleanse import Cleanse
+from data_clean.commands import Config
+from data_clean.fileid import Identify
 
 from data_clean.hashing import read_hashes
-from data_clean.logger import setup_logger
 from data_clean.processing import files_from_dir
 from data_clean.stats import Stats
 
 DEFAULT_HASHFILE = "hashes.txt"
 
+def parse_args() -> Tuple[argparse.ArgumentParser, Config]:
+    """Parse arguments from the cmdline, return the parsed arguments and some configuration object stuff"""
 
-def parse_args() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="A utility for cleaning up data pulled from file recovery\
                                                 software. Can identify files with unknown extentions with Libmagic\
                                                 and delete some system files based on a list of hashes.")
@@ -44,9 +49,6 @@ def parse_args() -> argparse.ArgumentParser:
         print("[!!] No actions provided, none taken!")
         sys.exit(1)
 
-    #set logger from verbosity
-    setup_logger(args.verbose)
-    
     if args.all:
         args.cleanse = True
         args.identify = True
@@ -54,16 +56,24 @@ def parse_args() -> argparse.ArgumentParser:
     #set hashfile if not set
     if not args.hashfile:
         args.hashfile = DEFAULT_HASHFILE
-    return args
+
+    #convert verbose into Config object
+    config = Config()
+    if args.verbose >=1:
+        config.verbose = True
+    if args.verbose >=2:
+        config.very_verbose = True
+    if args.verbose >=3 :
+        config.debug = True
+
+    config.test = args.test
+
+    return args, config
 
 
 def main():
     #parse arguments
-<<<<<<< HEAD
-    args = parse_args()
-=======
-    args = parse_args()    
->>>>>>> 67005eb0b8e18a86f5e064c7e92ebbeb3a935506
+    args, config = parse_args()
 
     #Create stat tracking object
     stats = Stats()
@@ -75,20 +85,22 @@ def main():
             files.append(names)
         else:
             files = files_from_dir(names)
+    stats.num_of_files = len(files)
+
+    #cleanse files first before identify
+    if args.cleanse:
+        hashes = read_hashes(args.hashfile, config.verbose)
+        cleanse = Cleanse(files=files, hashes=hashes, config=config, stats=stats)
+        files = cleanse.run()
 
     if args.identify:
-        pass
+        identify = Identify(files=files, config=config, stats=stats)
+        identify.run()
 
-    if args.cleanse:
-    #Read the hashes now so that were not trying to reopen the hash file everytime we process a file, probably a better way to do this
-        hashes = read_hashes(args.hashfile) 
-    
+
     if args.stats:
         print(f"{stats.changed} Changed files, {stats.deleted} Deleted files, {stats.unchanged} Unchanged files")
 
 
 if __name__ == "__main__":
     main()
-    logging.info("VERBOSE TEST")
-    logging.warning("VERY VERBOSE TEST")
-    logging.debug("Debug test")
