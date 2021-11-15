@@ -1,7 +1,7 @@
 
 from os import remove
 from data_clean.commands import Command
-from data_clean.hashing import hash
+from data_clean.hashing import hash_file
 class Cleanse(Command):
     def run(self):
         for file in self.files:
@@ -13,7 +13,7 @@ class Cleanse(Command):
 
     def cleanse_file(self,filename: str) -> bool:
         """Check if a file must be deleted based on the hashlist"""
-        file_hash = hash(filename)
+        file_hash = hash_file(filename)
         if self.debug:
             print(f'[!] Hash {file_hash}, filename {filename}')
         if file_hash in self.hashes:
