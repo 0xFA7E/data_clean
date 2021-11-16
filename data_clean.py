@@ -90,7 +90,7 @@ def main():
         if isfile(names):
             files.append(names)
         else:
-            files = files_from_dir(names)
+            files = files_from_dir(names, recursive=args.recursive)
     stats.num_of_files = len(files)
 
     #cleanse files first before identify
