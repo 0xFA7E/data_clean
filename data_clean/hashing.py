@@ -13,6 +13,11 @@ def read_hashes(hashfile: str, verbose: bool = False) -> list:
     return hashes
 
 def hash_file(filename: str) -> str:
-    with open(filename, 'rb') as f:
-        file_hash = md5(f.read()).hexdigest()
+    try:
+
+        with open(filename, 'rb') as f:
+            file_hash = md5(f.read()).hexdigest()
+    except FileNotFoundError:
+        print(f"Error hashing {filename}. Seems to not exist anymore.")
+        return None
     return file_hash
