@@ -1,8 +1,15 @@
 
 from os import remove
+from typing import Optional
 from data_clean.commands import Command
+from data_clean.configuration import Config
 from data_clean.hashing import hash_file
+from data_clean.stats import Stats
 class Cleanse(Command):
+    def __init__(self, files: list[str], config: Config, stats: Stats, dedupe: bool, hashes: Optional[list[str]] = list[str]):
+        super().__init__(files,config,stats,hashes)
+        self.dedupe = dedupe
+        
     def run(self):
         removed_files: list[str] = []
         for file in self.files:

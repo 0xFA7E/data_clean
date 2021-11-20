@@ -1,3 +1,4 @@
+# pylint: disable=no-name-in-module
 """Main tool for cleaning up files namely for data recovery purposes"""
 
 import sys
@@ -6,6 +7,7 @@ import argparse
 from typing import Tuple
 from data_clean.cleanse import Cleanse
 from data_clean.commands import Config
+from data_clean.configuration import ArgConfig
 from data_clean.fileid import Identify
 
 from data_clean.hashing import read_hashes
@@ -48,7 +50,7 @@ def parse_args() -> Tuple[argparse.ArgumentParser, Config]:
         sys.exit(1)
 
     actions = [args.identify, args.cleanse, args.dedupe, args.all]
-    if (not any(actions)):
+    if not any(actions):
     #no actions provided
         print("[!!] No actions provided, none taken!")
         sys.exit(1)
@@ -62,17 +64,9 @@ def parse_args() -> Tuple[argparse.ArgumentParser, Config]:
     if not args.hashfile:
         args.hashfile = DEFAULT_HASHFILE
 
-    #convert verbose into Config object
-    config = Config()
-    if args.verbose >=1:
-        config.verbose = True
-    if args.verbose >=2:
-        config.very_verbose = True
-    if args.verbose >=3 :
-        config.debug = True
-
-    config.test = args.test
-    config.dedupe = args.dedupe
+    #convert arguments into configuration
+    config = ArgConfig()
+    config.parse(args)
 
     return args, config
 
@@ -96,12 +90,12 @@ def main():
     #cleanse files first before identify
     #check for just dedupe removal
     if args.dedupe and not args.cleanse:
-        cleanse = Cleanse(files=files, hashes=[], config=config, stats=stats)
+        cleanse = Cleanse(files=files, hashes=[], config=config, stats=stats, dedupe=args.dedupe)
         files = cleanse.run()
     #if dedupe is set regular cleanse will handle it too
     if args.cleanse:
         hashes = read_hashes(args.hashfile, config.verbose)
-        cleanse = Cleanse(files=files, hashes=hashes, config=config, stats=stats)
+        cleanse = Cleanse(files=files, hashes=hashes, config=config, stats=stats, dedupe=args.dedupe)
         files = cleanse.run()
 
     if args.identify:
