@@ -1,42 +1,39 @@
 from hashlib import new
-import re
 import sys
 import argparse
 import io
 
-def isValidHash(md5string):
-    """check if provided string is valid format for md5"""
-    md5format = re.compile('^[a-f0-9]{32}$')
-    return md5format.match(md5string.strip())
+from data_clean.hashing import isValidHash
 
-def read_hashes(file):
-    hashes = io.open(file,mode='r', encoding="utf-8")
-    for i in file.readlines():
-        if isValidHash(i):
-            hashes.append(i+'\n')
-    file.close()
+def read_hashes(file: str) -> list[str]:
+    hashes = []
+    with open(file, 'r', encoding='utf-8') as hashlist:
+        for file_hash in hashlist.readlines():
+            if isValidHash(file_hash):
+                #newlines may be inconsistent so we strip em and then add one to normalize
+                hashes.append(file_hash.strip()+'\n')
     return hashes
 
-def merge(files):
-    """merge the md5 hashes for the provided files. Treats the first file as the reference"""
-    hashcount = 0
-    hashes = read_hashes(files[0])
-    starthashcount = len(hashes)
+def merge(file: list[str], hashes: list[str]) -> list[str]:
+    """merge the md5 hashes for the provided files."""
+    newhashes = read_hashes(file)
+    #if not hashes:
+    #    if args.verbose >= 1:
+    #        print(f"Added {len(newhashes)} hashes from {file}")
+    #    return newhashes
+    merged_hashes = list(set(hashes + newhashes))
     if args.verbose >= 1:
-        print(f"Loaded {starthashcount} hashes")
-    
-    for i in files[1:]:
-        newhashes = read_hashes(i)
-        newhashcount = len(hashes)
-        for n in newhashes:
-            if n not in hashes:
-                hashes.append(i)
-        if args.verbose >= 1:
-            print(f"Added {len(hashes)-newhashcount} new hashes from {i}")
-    if args.stats:
-        print(f"Added total of {len(hashes)-starthashcount} hashes.")
-    
-    return hashes
+        print(f"Added {len(merged_hashes)-len(hashes)} hashes from {file}")
+    return merged_hashes
+#     hashcount = 0
+#    for file_hash in newhashes:
+#        if file_hash not in hashes:
+#            hashes.append(file_hash)
+#            hashcount += 1
+#    if args.verbose >= 1:
+#        print(f"Added {hashcount} hashes from {file}")
+#    return hashes
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Supporting utility for merging hash collections")
@@ -45,7 +42,7 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", action="count", default=0,
                         help="Increased output")
     parser.add_argument("-s", "--stats", action="store_true",
-                        help="Print a summary of changes. Newly added hashes based on the first provided hashfile")
+                        help="Print a summary of changes.")
     parser.add_argument("-o","--output", type=str,
                         help="output file for results")
 
@@ -61,6 +58,10 @@ if __name__ == "__main__":
     if not args.output:
         print("[!!] Need an output destination")
     
-    hashes = merge(args.inputfiles)
-    outfile = io.open(args.output, mode="w", encoding="utf-8")
-    outfile.writelines(hashes)
+    hashes = []
+    for file in args.inputfiles:
+        hashes = merge(file, hashes)
+    if args.stats:
+        print(f"Added {len(hashes)} hashes total.")
+    with open(args.output, 'w', encoding='utf8') as outfile:
+        outfile.writelines(hashes)

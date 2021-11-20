@@ -1,4 +1,10 @@
 from hashlib import md5
+import re
+
+def isValidHash(md5string):
+    """check if provided string is valid format for md5"""
+    md5format = re.compile('^[a-f0-9]{32}$')
+    return md5format.match(md5string.strip())
 
 def read_hashes(hashfile: str, verbose: bool = False) -> list:
     """generate the list of hashes based on provided hashfile"""
