@@ -12,6 +12,6 @@ def files_from_dir(directory: str, recursive: bool = False, exclude: Optional[li
     if recursive:
         # we're descending recursively but not checking for any looping redirects or anything, take care humans
         directories = [join(directory, dirs) for dirs in listdir(directory) if isdir(join(directory, dirs)) and join(directory,dirs) not in exclude]
-        for d in directories:
-            files.extend(files_from_dir(d, recursive=True))
+        for directory in directories:
+            files.extend(files_from_dir(directory, recursive=True))
     return files

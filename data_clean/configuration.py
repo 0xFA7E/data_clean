@@ -23,4 +23,3 @@ class ArgConfig(Config):
             self.very_verbose = True
         if args.verbose >= 3:
             self.debug = True
-        

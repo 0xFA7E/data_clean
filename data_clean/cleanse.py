@@ -39,6 +39,6 @@ class Cleanse(Command):
         #if were dudplicating files we append the hash so the next instance of a file found will get cleansed
         if self.dedupe:
             self.hashes.append(file_hash)
-        
+
         #Didnt find anything so exiting false
         return False
